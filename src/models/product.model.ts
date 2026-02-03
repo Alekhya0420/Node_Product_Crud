@@ -2,6 +2,7 @@ import { Schema, model, Document } from 'mongoose';
 
 export interface ProductDocument extends Document {
   name: string;
+  status:string;
   price: number;
   file?: {
     url: string;
@@ -16,6 +17,11 @@ const productSchema = new Schema<ProductDocument>(
       type: String,
       required: true,
       trim: true,
+    },
+    status: {
+      type: String,
+      enum: ['active', 'inactive'],
+      default: 'active',
     },
     price: {
       type: Number,

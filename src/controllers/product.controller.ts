@@ -3,7 +3,7 @@ import { ProductModel } from '../models/product.model';
 import { Product } from '../types/product.type';
 
 
-
+//GET all products
 export const getProducts = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
@@ -48,7 +48,7 @@ export const getProductById = async (req: Request, res: Response) => {
 // CREATE product
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { name, price } = req.body;
+    const { name, price,status } = req.body;
 
     if (!name || price === undefined) {
       return res.status(400).json({ message: 'Name and price are required' });
@@ -57,6 +57,7 @@ export const createProduct = async (req: Request, res: Response) => {
     const productData: Product = {
       name,
       price,
+      status,
     };
     if (req.file) {
       productData.file = {
@@ -98,7 +99,7 @@ export const updateProduct = async (req: Request, res: Response) => {
   res.status(200).json(product);
 };
 
-// DELETE product
+//DELETE product
 export const deleteProduct = async (req: Request, res: Response) => {
   const product = await ProductModel.findByIdAndDelete(req.params.id);
 
@@ -108,3 +109,5 @@ export const deleteProduct = async (req: Request, res: Response) => {
 
   res.status(200).json({ message: 'Product deleted successfully' });
 };
+
+//STATUS CHANGE of a product
