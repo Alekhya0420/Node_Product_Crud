@@ -3,22 +3,41 @@ import { ProductModel } from '../models/product.model';
 import { Product } from '../types/product.type';
 
 
-//GET all products
+//1)GET all products
 export const getProducts = async (req: Request, res: Response) => {
   try {
+    //pagination
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
 
     const skip = (page - 1) * limit;
 
-    // ✅ fetch paginated data
-    const products = await ProductModel.find()
+    //filters
+    const search = req.query.search as string;
+    const status = req.query.status as string;
+
+    const filter: any = {};
+
+    //search by name (case-insensitive)
+    if (search) {
+      filter.name = { $regex: search, $options: 'i' };
+    }
+
+    //filter by status (exact match)
+    if (status && ['active', 'inactive'].includes(status)) {
+      filter.status = status;
+    }
+
+    //query
+    const products = await ProductModel.find(filter)
+      .sort({ createdAt: -1 }) //This means newest items first
       .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
+      .limit(limit);
 
-    const total = await ProductModel.countDocuments();
+    //total count (same filter!)
+    const total = await ProductModel.countDocuments(filter);
 
+    //response
     res.status(200).json({
       totalData: {
         totalDocs: total,
@@ -34,7 +53,8 @@ export const getProducts = async (req: Request, res: Response) => {
 };
 
 
-// GET product by ID
+
+//2)GET product by ID
 export const getProductById = async (req: Request, res: Response) => {
   const product = await ProductModel.findById(req.params.id);
 
@@ -45,7 +65,7 @@ export const getProductById = async (req: Request, res: Response) => {
   res.status(200).json(product);
 };
 
-// CREATE product
+//3)CREATE product
 export const createProduct = async (req: Request, res: Response) => {
   try {
     const { name, price,status } = req.body;
@@ -74,7 +94,7 @@ export const createProduct = async (req: Request, res: Response) => {
   }
 };
 
-// UPDATE product
+//4)UPDATE product
 export const updateProduct = async (req: Request, res: Response) => {
   const updateData: any = { ...req.body };
 
@@ -99,7 +119,7 @@ export const updateProduct = async (req: Request, res: Response) => {
   res.status(200).json(product);
 };
 
-//DELETE product
+//5)DELETE product
 export const deleteProduct = async (req: Request, res: Response) => {
   const product = await ProductModel.findByIdAndDelete(req.params.id);
 
@@ -110,4 +130,33 @@ export const deleteProduct = async (req: Request, res: Response) => {
   res.status(200).json({ message: 'Product deleted successfully' });
 };
 
-//STATUS CHANGE of a product
+//6)STATUS CHANGE of a product
+export const updateProductStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!['active', 'inactive'].includes(status)) {
+      return res.status(400).json({
+        message: 'Status must be active or inactive',
+      });
+    }
+
+    const product = await ProductModel.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.status(200).json({
+      message: 'Status updated successfully',
+      data: product,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update product status' });
+  }
+};
