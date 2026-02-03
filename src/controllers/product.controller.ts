@@ -1,81 +1,3 @@
-// import { Request, Response } from 'express';
-// import { Product } from '../types/product.type';
-
-
-// let products: Product[] = [];
-
-// //1)GET all products
-// export const getProducts = (req: Request, res: Response): void => {
-//   res.status(200).json(products);
-// };
-
-// //2)GET product by ID
-// export const getProductById = (req: Request, res: Response): void => {
-//   const id = Number(req.params.id);
-//   const product = products.find(p => p.id === id);
-
-//   if (!product) {
-//     res.status(404).json({ message: 'Product not found' });
-//     return;
-//   }
-
-//   res.status(200).json(product);
-// };
-
-// //3)CREATE product
-// export const createProduct = (req: Request, res: Response): void => {
-//   const { name, price } = req.body;
-
-//   if (!name || !price) {
-//     res.status(400).json({ message: 'Name and price are required' });
-//     return;
-//   }
-
-//   const newProduct: Product = {
-//     id: Date.now(),
-//     name,
-//     price,
-//   };
-
-//   products.push(newProduct);
-//   res.status(201).json(newProduct);
-// };
-
-// //4)UPDATE product
-// export const updateProduct = (req: Request, res: Response): void => {
-//   const id = Number(req.params.id);
-//   const product = products.find(p => p.id === id);
-
-//   if (!product) {
-//     res.status(404).json({ message: 'Product not found' });
-//     return;
-//   }
-
-//   const { name, price } = req.body;
-
-//   product.name = name ?? product.name;
-//   product.price = price ?? product.price;
-
-//   res.status(200).json(product);
-// };
-
-// //5)DELETE product
-// export const deleteProduct = (req: Request, res: Response): void => {
-//   const id = Number(req.params.id);
-
-//   const productExists = products.some(p => p.id === id);
-
-//   if (!productExists) {
-//     res.status(404).json({ message: 'Product not found' });
-//     return;
-//   }
-
-//   products = products.filter(p => p.id !== id);
-
-//   res.status(200).json({ message: 'Product deleted successfully' });
-// };
-
-
 import { Request, Response } from 'express';
 import { ProductModel } from '../models/product.model';
 
@@ -98,21 +20,47 @@ export const getProductById = async (req: Request, res: Response) => {
 
 // CREATE product
 export const createProduct = async (req: Request, res: Response) => {
-  const { name, price } = req.body;
+  try {
+    const { name, price } = req.body;
 
-  if (!name || price === undefined) {
-    return res.status(400).json({ message: 'Name and price are required' });
+    if (!name || price === undefined) {
+      return res.status(400).json({ message: 'Name and price are required' });
+    }
+
+    const productData: any = {
+      name,
+      price,
+    };
+    if (req.file) {
+      productData.file = {
+        url: req.file.path,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+      };
+    }
+
+    const product = await ProductModel.create(productData);
+    res.status(201).json(product);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to create product' });
   }
-
-  const product = await ProductModel.create({ name, price });
-  res.status(201).json(product);
 };
 
 // UPDATE product
 export const updateProduct = async (req: Request, res: Response) => {
+  const updateData: any = { ...req.body };
+
+  if (req.file) {
+    updateData.file = {
+      url: req.file.path,
+      originalName: req.file.originalname,
+      mimeType: req.file.mimetype,
+    };
+  }
+
   const product = await ProductModel.findByIdAndUpdate(
     req.params.id,
-    req.body,
+    updateData,
     { new: true }
   );
 

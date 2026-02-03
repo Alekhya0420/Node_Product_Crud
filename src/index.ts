@@ -7,6 +7,8 @@ const PORT = 3000;
 const MONGO_URI = 'mongodb+srv://Alekhya:VesEL_ND77thuQV@cluster0.xel9zn0.mongodb.net/productDB?retryWrites=true&w=majority'
 
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
+
 app.get('/', (_req: Request, res: Response) => {
   res.send('✅ Product CRUD API is running');
 });
