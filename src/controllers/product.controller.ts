@@ -1,15 +1,17 @@
-import { Request, Response } from 'express';
-import { ProductModel } from '../models/product.model';
-import { Product } from '../types/product.type';
-
+import { Request, Response } from "express";
+import { ProductModel } from "../models/product.model";
+import { Product } from "../types/product.type";
 
 //1)GET all products
 
 export const getProducts = async (req: Request, res: Response) => {
   try {
     // pagination
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const page = Math.max(parseInt(req.query.page as string) || 1, 1);
+    const limit = Math.min(
+      Math.max(parseInt(req.query.limit as string) || 10, 1),
+      100,
+    );
 
     const skip = (page - 1) * limit;
 
@@ -21,11 +23,11 @@ export const getProducts = async (req: Request, res: Response) => {
 
     //search by name (case-insensitive)
     if (search) {
-      filter.name = { $regex: search, $options: 'i' };
+      filter.name = { $regex: search, $options: "i" };
     }
 
     //filter by status (exact match)
-    if (status && ['active', 'inactive'].includes(status)) {
+    if (status && ["active", "inactive"].includes(status)) {
       filter.status = status;
     }
 
@@ -49,18 +51,16 @@ export const getProducts = async (req: Request, res: Response) => {
       data: products,
     });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch products' });
+    res.status(500).json({ message: "Failed to fetch products" });
   }
 };
-
-
 
 //2)GET product by ID
 export const getProductById = async (req: Request, res: Response) => {
   const product = await ProductModel.findById(req.params.id);
 
   if (!product) {
-    return res.status(404).json({ message: 'Product not found' });
+    return res.status(404).json({ message: "Product not found" });
   }
 
   res.status(200).json(product);
@@ -69,10 +69,10 @@ export const getProductById = async (req: Request, res: Response) => {
 //3)CREATE product
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { name, price,status } = req.body;
+    const { name, price, status } = req.body;
 
     if (!name || price === undefined) {
-      return res.status(400).json({ message: 'Name and price are required' });
+      return res.status(400).json({ message: "Name and price are required" });
     }
 
     const productData: Product = {
@@ -91,7 +91,7 @@ export const createProduct = async (req: Request, res: Response) => {
     const product = await ProductModel.create(productData);
     res.status(201).json(product);
   } catch (error) {
-    res.status(500).json({ message: 'Failed to create product' });
+    res.status(500).json({ message: "Failed to create product" });
   }
 };
 
@@ -110,11 +110,11 @@ export const updateProduct = async (req: Request, res: Response) => {
   const product = await ProductModel.findByIdAndUpdate(
     req.params.id,
     updateData,
-    { new: true }
+    { new: true },
   );
 
   if (!product) {
-    return res.status(404).json({ message: 'Product not found' });
+    return res.status(404).json({ message: "Product not found" });
   }
 
   res.status(200).json(product);
@@ -125,10 +125,10 @@ export const deleteProduct = async (req: Request, res: Response) => {
   const product = await ProductModel.findByIdAndDelete(req.params.id);
 
   if (!product) {
-    return res.status(404).json({ message: 'Product not found' });
+    return res.status(404).json({ message: "Product not found" });
   }
 
-  res.status(200).json({ message: 'Product deleted successfully' });
+  res.status(200).json({ message: "Product deleted successfully" });
 };
 
 //6)STATUS CHANGE of a product
@@ -137,27 +137,27 @@ export const updateProductStatus = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!['active', 'inactive'].includes(status)) {
+    if (!["active", "inactive"].includes(status)) {
       return res.status(400).json({
-        message: 'Status must be active or inactive',
+        message: "Status must be active or inactive",
       });
     }
 
     const product = await ProductModel.findByIdAndUpdate(
       id,
       { status },
-      { new: true }
+      { new: true },
     );
 
     if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
+      return res.status(404).json({ message: "Product not found" });
     }
 
     res.status(200).json({
-      message: 'Status updated successfully',
+      message: "Status updated successfully",
       data: product,
     });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to update product status' });
+    res.status(500).json({ message: "Failed to update product status" });
   }
 };
