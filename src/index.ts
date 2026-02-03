@@ -4,7 +4,7 @@ import productRoutes from './routes/product.routes';
 
 const app = express();
 const PORT = 3000;
-const MONGO_URI = 'mongodb://127.0.0.1:27017/productDB';
+const MONGO_URI = 'mongodb+srv://Alekhya:VesEL_ND77thuQV@cluster0.xel9zn0.mongodb.net/productDB?retryWrites=true&w=majority'
 
 app.use(express.json());
 app.get('/', (_req: Request, res: Response) => {
