@@ -4,9 +4,10 @@ import { Product } from '../types/product.type';
 
 
 //1)GET all products
+
 export const getProducts = async (req: Request, res: Response) => {
   try {
-    //pagination
+    // pagination
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
 
