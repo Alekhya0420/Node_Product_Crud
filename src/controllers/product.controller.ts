@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { ProductModel } from '../models/product.model';
+import { Product } from '../types/product.type';
+
 
 // GET all products
 export const getProducts = async (_: Request, res: Response) => {
@@ -27,7 +29,7 @@ export const createProduct = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Name and price are required' });
     }
 
-    const productData: any = {
+    const productData: Product = {
       name,
       price,
     };
