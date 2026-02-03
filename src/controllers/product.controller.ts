@@ -3,11 +3,6 @@ import { ProductModel } from '../models/product.model';
 import { Product } from '../types/product.type';
 
 
-// GET all products
-// export const getProducts = async (_: Request, res: Response) => {
-//   const products = await ProductModel.find();
-//   res.status(200).json(products);
-// };
 
 export const getProducts = async (req: Request, res: Response) => {
   try {
@@ -25,13 +20,13 @@ export const getProducts = async (req: Request, res: Response) => {
     const total = await ProductModel.countDocuments();
 
     res.status(200).json({
-      data: products,
       totalData: {
         totalDocs: total,
         currentPage: page,
         totalPages: Math.ceil(total / limit),
         limit,
       },
+      data: products,
     });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch products' });
