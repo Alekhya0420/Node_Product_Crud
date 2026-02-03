@@ -4,10 +4,40 @@ import { Product } from '../types/product.type';
 
 
 // GET all products
-export const getProducts = async (_: Request, res: Response) => {
-  const products = await ProductModel.find();
-  res.status(200).json(products);
+// export const getProducts = async (_: Request, res: Response) => {
+//   const products = await ProductModel.find();
+//   res.status(200).json(products);
+// };
+
+export const getProducts = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const skip = (page - 1) * limit;
+
+    // ✅ fetch paginated data
+    const products = await ProductModel.find()
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await ProductModel.countDocuments();
+
+    res.status(200).json({
+      data: products,
+      totalData: {
+        totalDocs: total,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        limit,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch products' });
+  }
 };
+
 
 // GET product by ID
 export const getProductById = async (req: Request, res: Response) => {
