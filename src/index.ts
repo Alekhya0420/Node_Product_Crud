@@ -1,11 +1,13 @@
+import dotenv from "dotenv";
+dotenv.config({ path: ".env" });
+
 import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import productRoutes from './routes/product.routes';
-import dotenv from 'dotenv';
+import authRoutes from './routes/auth.routes'
 
 const app = express();
 const PORT = 3000;
-dotenv.config();
 
 //const MONGO_URI = 'mongodb+srv://Alekhya:VesEL_ND77thuQV@cluster0.xel9zn0.mongodb.net/productDB?retryWrites=true&w=majority'
 dotenv.config();
@@ -19,6 +21,7 @@ app.get('/', (_req: Request, res: Response) => {
 });
 
 app.use('/api/products', productRoutes);
+app.use('/api/auth',authRoutes);
 
 const startServer = async () => {
   try {
@@ -26,10 +29,10 @@ const startServer = async () => {
     console.log('✅ MongoDB connected');
 
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
+      console.log(`Server running on http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error('❌ MongoDB connection failed:', error);
+    console.error('MongoDB connection failed:', error);
     process.exit(1);
   }
 };
