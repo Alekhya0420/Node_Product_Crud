@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import productRoutes from './routes/product.routes';
+import authRoutes from './routes/auth.routes'
 import dotenv from 'dotenv';
 
 const app = express();
@@ -19,6 +20,7 @@ app.get('/', (_req: Request, res: Response) => {
 });
 
 app.use('/api/products', productRoutes);
+app.use('/api/auth',authRoutes);
 
 const startServer = async () => {
   try {
