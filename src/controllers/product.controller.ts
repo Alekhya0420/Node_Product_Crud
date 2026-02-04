@@ -3,7 +3,6 @@ import { ProductModel } from "../models/product.model";
 import { Product } from "../types/product.type";
 
 //1)GET all products
-
 export const getProducts = async (req: Request, res: Response) => {
   try {
     // pagination
