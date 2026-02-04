@@ -8,8 +8,11 @@ import {
   updateProductStatus
 } from '../controllers/product.controller';
 import { upload } from '../middlewares/multer';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
+router.use(authMiddleware);
+
 //api endpoints
 router.get('/', getProducts);
 router.get('/:id', getProductById);
