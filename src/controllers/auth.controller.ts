@@ -65,6 +65,8 @@ export const login = async (req: Request, res: Response) => {
     await user.save();
 
     return res.status(200).json({
+    statusCode: 200,
+    message: "User logged in successfully",
       data:{
         email:user.email,
         name:user.name,
@@ -171,6 +173,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
       message: "If user exists, reset email sent",
     });
   } catch (error) {
+    console.error("❌ FORGOT PASSWORD ERROR:", error);
     return res.status(500).json({ message: "Forgot password failed" });
   }
 };
