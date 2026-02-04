@@ -1,12 +1,13 @@
+import dotenv from "dotenv";
+dotenv.config({ path: ".env" });
+
 import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import productRoutes from './routes/product.routes';
 import authRoutes from './routes/auth.routes'
-import dotenv from 'dotenv';
 
 const app = express();
 const PORT = 3000;
-dotenv.config();
 
 //const MONGO_URI = 'mongodb+srv://Alekhya:VesEL_ND77thuQV@cluster0.xel9zn0.mongodb.net/productDB?retryWrites=true&w=majority'
 dotenv.config();
