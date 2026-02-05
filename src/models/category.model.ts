@@ -21,10 +21,7 @@ const CategorySchema = new mongoose.Schema(
       default: "active",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const CategoryModel = mongoose.model(
-  "Category",
-  CategorySchema
-);
+export const CategoryModel = mongoose.model("Category", CategorySchema);
