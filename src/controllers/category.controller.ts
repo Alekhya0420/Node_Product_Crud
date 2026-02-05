@@ -23,6 +23,15 @@ export const createCategory = async (req: Request, res: Response) => {
       });
     }
 
+    //if category name already exist,you can't again create the same category
+    const cateGoryPresent = await CategoryModel.findOne({name});
+    if(cateGoryPresent)
+    {
+        return res.status(409).json({
+            message:"Category already exist,You cant create category with same name"
+        })
+    }
+
     const category = await CategoryModel.create({
       name,
       products,

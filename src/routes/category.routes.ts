@@ -15,7 +15,7 @@ router.use(authMiddleware);
 //api endpoints
 router.get("/getallCategories", getCategories);
 router.get("/:id", getCategoryById);
-router.post("/", createCategory);
+router.post("/create-category", createCategory);
 router.put("/:id", updateCategory);
 router.delete("/:id", deleteCategory);
 router.patch("/:id", updateCategoryStatus);
