@@ -24,6 +24,7 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const hashedPassword = await hashPassword(password);
+    console.info('hashed password is',hashPassword);
 
     await UserModel.create({
       name,
