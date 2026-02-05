@@ -7,18 +7,25 @@ export interface UserDocument extends Document {
   refreshToken?: string;
   resetPasswordToken?: string;
   resetPasswordExpiry?: Date;
+  otpVerified?:boolean,
+  otp?: string;
+  otpExpiry?: Date;
 }
 
 const userSchema = new Schema<UserDocument>(
   {
     name: String,
-    email: { type: String, unique: true },
+    email: String,
     password: String,
     refreshToken: String,
     resetPasswordToken: String,
     resetPasswordExpiry: Date,
+    otp: String,
+    otpExpiry: Date,
+    otpVerified: { type: Boolean, default: false },
+
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const UserModel = model<UserDocument>("User", userSchema);
