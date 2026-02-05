@@ -12,8 +12,7 @@ export const createCategory = async (req: Request, res: Response) => {
         message: "Category name and products array are required",
       });
     }
-
-    // 🔒 Check if any product already exists in another category
+    // Check if any product already exists in another category
     const conflict = await CategoryModel.findOne({
       products: { $in: products },
     });
