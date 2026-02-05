@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { CategoryModel } from "../models/category.model";
-import { ProductModel } from "../models/product.model";
 
 /**CREATE CATEGORY,One category can have many products,A product cannot belong to another category*/
 export const createCategory = async (req: Request, res: Response) => {
