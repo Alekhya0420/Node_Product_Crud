@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { ProductModel } from "../models/product.model";
 import { Product } from "../types/product.type";
+import fs from "fs";
+import path from "path";
 
 
 export const getProducts = async (req: Request, res: Response) => {
@@ -99,19 +101,15 @@ export const createProduct = async (req: Request, res: Response) => {
         message: "Name, price, supplierId and categoryId are required",
       });
     }
-
-    const nameExisting = await ProductModel.findOne({name})
-
+ 
+    const nameExisting = await ProductModel.findOne({name});
     if (nameExisting) {
       return res.status(409).json({
         message: "Product name is already present, please use another name",
       });
     }
 
-    if (
-      !mongoose.isValidObjectId(supplierId) ||
-      !mongoose.isValidObjectId(categoryId)
-    ) {
+    if (!mongoose.isValidObjectId(supplierId) || !mongoose.isValidObjectId(categoryId)) {
       return res.status(400).json({
         message: "Invalid supplierId or categoryId",
       });
@@ -134,12 +132,12 @@ export const createProduct = async (req: Request, res: Response) => {
     }
 
     const product = await ProductModel.create(productData);
-
     res.status(201).json(product);
-  } catch (error) {
+  } catch {
     res.status(500).json({ message: "Failed to create product" });
   }
 };
+
 
 
 export const updateProduct = async (req: Request, res: Response) => {
@@ -150,9 +148,24 @@ export const updateProduct = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid product id" });
     }
 
-    const updateData: any = { ...req.body };
+    // Get existing product FIRST
+    const existingProduct = await ProductModel.findById(id);
 
+    if (!existingProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const updateData: any = { ...req.body };
+    // If new image uploaded → delete old image
     if (req.file) {
+      if (existingProduct.file?.url) {
+        const oldImagePath = path.join(process.cwd(), existingProduct.file.url);
+
+        fs.unlink(oldImagePath, (err) => {
+          if (err) console.warn("Old image delete failed:", err.message);
+        });
+      }
+
       updateData.file = {
         url: req.file.path,
         originalName: req.file.originalname,
@@ -160,21 +173,19 @@ export const updateProduct = async (req: Request, res: Response) => {
       };
     }
 
+    // 3️⃣ Update product
     const product = await ProductModel.findByIdAndUpdate(id, updateData, {
       new: true,
     })
       .populate("supplierId", "name status")
       .populate("categoryId", "name status");
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
     res.status(200).json(product);
-  } catch (error) {
+  } catch {
     res.status(500).json({ message: "Failed to update product" });
   }
 };
+
 
 
 export const deleteProduct = async (req: Request, res: Response) => {
