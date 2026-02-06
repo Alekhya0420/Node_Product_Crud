@@ -125,7 +125,7 @@ export const createProduct = async (req: Request, res: Response) => {
 
     if (req.file) {
       productData.file = {
-        url: req.file.path,
+        url: (req.file as any).location,
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
       };
@@ -167,7 +167,7 @@ export const updateProduct = async (req: Request, res: Response) => {
       }
 
       updateData.file = {
-        url: req.file.path,
+        url: (req.file as any).location,
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
       };
