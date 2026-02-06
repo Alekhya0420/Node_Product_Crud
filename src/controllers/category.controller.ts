@@ -4,37 +4,25 @@ import { CategoryModel } from "../models/category.model";
 /**CREATE CATEGORY,One category can have many products,A product cannot belong to another category*/
 export const createCategory = async (req: Request, res: Response) => {
   try {
-    const { name, products } = req.body;
+    const { name } = req.body;
 
-    if (!name || !Array.isArray(products) || products.length === 0) {
+    if (!name) {
       return res.status(400).json({
-        message: "Category name and products array are required",
-      });
-    }
-    // Check if any product already exists in another category
-    const conflict = await CategoryModel.findOne({
-      products: { $in: products },
-    });
-
-    if (conflict) {
-      return res.status(409).json({
-        message:
-          "One or more selected products already belong to another category",
+        message: "Category name is  required",
       });
     }
 
     //if category name already exist,you can't again create the same category
-    const cateGoryPresent = await CategoryModel.findOne({name});
-    if(cateGoryPresent)
-    {
-        return res.status(409).json({
-            message:"Category already exist,You cant create category with same name"
-        })
+    const cateGoryPresent = await CategoryModel.findOne({ name });
+    if (cateGoryPresent) {
+      return res.status(409).json({
+        message:
+          "Category already exist,You cant create category with same name",
+      });
     }
 
     const category = await CategoryModel.create({
       name,
-      products,
     });
 
     res.status(201).json(category);
@@ -59,15 +47,8 @@ export const getCategories = async (req: Request, res: Response) => {
 /** GET CATEGORY BY ID */
 export const getCategoryById = async (req: Request, res: Response) => {
   try {
-    const category = await CategoryModel.findById(req.params.id).populate(
-      "products",
-      "name price status"
-    );
-
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" });
-    }
-
+    const { id } = req.params;
+    const category = await CategoryModel.findById(id);
     res.status(200).json(category);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch category" });
@@ -78,34 +59,13 @@ export const getCategoryById = async (req: Request, res: Response) => {
 export const updateCategory = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, products, status } = req.body;
-
-    if (products && !Array.isArray(products)) {
-      return res.status(400).json({
-        message: "Products must be an array",
-      });
-    }
-
-    // 🔒 Prevent product reuse across categories
-    if (products) {
-      const conflict = await CategoryModel.findOne({
-        _id: { $ne: id },
-        products: { $in: products },
-      });
-
-      if (conflict) {
-        return res.status(409).json({
-          message:
-            "One or more products already assigned to another category",
-        });
-      }
-    }
+    const { name, status } = req.body;
 
     const category = await CategoryModel.findByIdAndUpdate(
       id,
-      { name, products, status },
-      { new: true }
-    ).populate("products", "name price status");
+      { name, status },
+      { new: true },
+    );
 
     if (!category) {
       return res.status(404).json({ message: "Category not found" });
@@ -146,7 +106,7 @@ export const updateCategoryStatus = async (req: Request, res: Response) => {
     const category = await CategoryModel.findByIdAndUpdate(
       req.params.id,
       { status },
-      { new: true }
+      { new: true },
     );
 
     if (!category) {

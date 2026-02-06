@@ -2,7 +2,6 @@ import { Schema, model, Document } from "mongoose";
 
 export interface ICategory extends Document {
   name: string;
-  products: Schema.Types.ObjectId[];
   status: "active" | "inactive";
 }
 
@@ -12,14 +11,8 @@ const CategorySchema = new Schema<ICategory>(
       type: String,
       required: true,
       unique: true,
+      trim: true,
     },
-
-    products: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Product",
-      },
-    ],
 
     status: {
       type: String,
@@ -33,3 +26,4 @@ const CategorySchema = new Schema<ICategory>(
 );
 
 export const CategoryModel = model<ICategory>("Category", CategorySchema);
+
