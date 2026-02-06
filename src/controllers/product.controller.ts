@@ -1,45 +1,57 @@
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 import { ProductModel } from "../models/product.model";
 import { Product } from "../types/product.type";
 
-//1)GET all products
+
 export const getProducts = async (req: Request, res: Response) => {
   try {
     // pagination
     const page = Math.max(parseInt(req.query.page as string) || 1, 1);
     const limit = Math.min(
       Math.max(parseInt(req.query.limit as string) || 10, 1),
-      100,
+      100
     );
-
     const skip = (page - 1) * limit;
 
-    //filters
+    // filters
     const search = req.query.search as string;
     const status = req.query.status as string;
+    const supplierId = req.query.supplierId as string;
+    const categoryId = req.query.categoryId as string;
 
     const filter: any = {};
 
-    //search by name (case-insensitive)
+    // search by name
     if (search) {
       filter.name = { $regex: search, $options: "i" };
     }
 
-    //filter by status (exact match)
+    // filter by status
     if (status && ["active", "inactive"].includes(status)) {
       filter.status = status;
     }
 
-    //query
+    // filter by supplier
+    if (supplierId && mongoose.isValidObjectId(supplierId)) {
+      filter.supplierId = supplierId;
+    }
+
+    // filter by category
+    if (categoryId && mongoose.isValidObjectId(categoryId)) {
+      filter.categoryId = categoryId;
+    }
+
+    // query
     const products = await ProductModel.find(filter)
-      .sort({ createdAt: -1 }) //This means newest items first
+      .populate("supplierId", "name status")
+      .populate("categoryId", "name status")
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    //total count (same filter!)
     const total = await ProductModel.countDocuments(filter);
 
-    //response
     res.status(200).json({
       totalData: {
         totalDocs: total,
@@ -54,31 +66,65 @@ export const getProducts = async (req: Request, res: Response) => {
   }
 };
 
-//2)GET product by ID
+
 export const getProductById = async (req: Request, res: Response) => {
-  const product = await ProductModel.findById(req.params.id);
+  try {
+    const { id } = req.params;
 
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid product id" });
+    }
+
+    const product = await ProductModel.findById(id)
+      .populate("supplierId", "name status")
+      .populate("categoryId", "name status");
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch product" });
   }
-
-  res.status(200).json(product);
 };
 
-//3)CREATE product
+
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { name, price, status } = req.body;
+    const { name, price, status, supplierId, categoryId } = req.body;
 
-    if (!name || price === undefined) {
-      return res.status(400).json({ message: "Name and price are required" });
+    if (!name || typeof name !== "string" || !name.trim() || price === undefined || !supplierId || !categoryId) {
+      return res.status(400).json({
+        message: "Name, price, supplierId and categoryId are required",
+      });
+    }
+
+    const nameExisting = await ProductModel.findOne({name})
+
+    if (nameExisting) {
+      return res.status(409).json({
+        message: "Product name is already present, please use another name",
+      });
+    }
+
+    if (
+      !mongoose.isValidObjectId(supplierId) ||
+      !mongoose.isValidObjectId(categoryId)
+    ) {
+      return res.status(400).json({
+        message: "Invalid supplierId or categoryId",
+      });
     }
 
     const productData: Product = {
       name,
       price,
       status,
+      supplierId,
+      categoryId,
     };
+
     if (req.file) {
       productData.file = {
         url: req.file.path,
@@ -88,53 +134,78 @@ export const createProduct = async (req: Request, res: Response) => {
     }
 
     const product = await ProductModel.create(productData);
+
     res.status(201).json(product);
   } catch (error) {
     res.status(500).json({ message: "Failed to create product" });
   }
 };
 
-//4)UPDATE product
+
 export const updateProduct = async (req: Request, res: Response) => {
-  const updateData: any = { ...req.body };
+  try {
+    const { id } = req.params;
 
-  if (req.file) {
-    updateData.file = {
-      url: req.file.path,
-      originalName: req.file.originalname,
-      mimeType: req.file.mimetype,
-    };
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid product id" });
+    }
+
+    const updateData: any = { ...req.body };
+
+    if (req.file) {
+      updateData.file = {
+        url: req.file.path,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+      };
+    }
+
+    const product = await ProductModel.findByIdAndUpdate(id, updateData, {
+      new: true,
+    })
+      .populate("supplierId", "name status")
+      .populate("categoryId", "name status");
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update product" });
   }
-
-  const product = await ProductModel.findByIdAndUpdate(
-    req.params.id,
-    updateData,
-    { new: true },
-  );
-
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
-  }
-
-  res.status(200).json(product);
 };
 
-//5)DELETE product
+
 export const deleteProduct = async (req: Request, res: Response) => {
-  const product = await ProductModel.findByIdAndDelete(req.params.id);
+  try {
+    const { id } = req.params;
 
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid product id" });
+    }
+
+    const product = await ProductModel.findByIdAndDelete(id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json({ message: "Product deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete product" });
   }
-
-  res.status(200).json({ message: "Product deleted successfully" });
 };
 
-//6)STATUS CHANGE of a product
+
 export const updateProductStatus = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid product id" });
+    }
 
     if (!["active", "inactive"].includes(status)) {
       return res.status(400).json({
@@ -145,7 +216,7 @@ export const updateProductStatus = async (req: Request, res: Response) => {
     const product = await ProductModel.findByIdAndUpdate(
       id,
       { status },
-      { new: true },
+      { new: true }
     );
 
     if (!product) {

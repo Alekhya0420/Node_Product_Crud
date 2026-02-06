@@ -1,6 +1,12 @@
-import mongoose from "mongoose";
+import { Schema, model, Document } from "mongoose";
 
-const CategorySchema = new mongoose.Schema(
+export interface ICategory extends Document {
+  name: string;
+  products: Schema.Types.ObjectId[];
+  status: "active" | "inactive";
+}
+
+const CategorySchema = new Schema<ICategory>(
   {
     name: {
       type: String,
@@ -10,7 +16,7 @@ const CategorySchema = new mongoose.Schema(
 
     products: [
       {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: "Product",
       },
     ],
@@ -21,7 +27,9 @@ const CategorySchema = new mongoose.Schema(
       default: "active",
     },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  }
 );
 
-export const CategoryModel = mongoose.model("Category", CategorySchema);
+export const CategoryModel = model<ICategory>("Category", CategorySchema);
