@@ -1,9 +1,13 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Types } from "mongoose";
 
 export interface ProductDocument extends Document {
   name: string;
-  status:string;
+  status: "active" | "inactive";
   price: number;
+
+  supplierId: Types.ObjectId;
+  categoryId: Types.ObjectId;
+
   file?: {
     url: string;
     originalName: string;
@@ -18,35 +22,41 @@ const productSchema = new Schema<ProductDocument>(
       required: true,
       trim: true,
     },
+
     status: {
       type: String,
-      enum: ['active', 'inactive'],
-      default: 'active',
+      enum: ["active", "inactive"],
+      default: "active",
     },
+
     price: {
       type: Number,
       required: true,
     },
+
+    supplierId: {
+      type: Schema.Types.ObjectId,
+      ref: "Supplier",
+      required: true,
+    },
+
+    categoryId: {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
+
     file: {
-      url: {
-        type: String,
-        required: false,
-      },
-      originalName: {
-        type: String,
-        required: false,
-      },
-      mimeType: {
-        type: String,
-        required: false,
-      },
+      url: String,
+      originalName: String,
+      mimeType: String,
     },
   },
   { timestamps: true }
 );
 
 export const ProductModel = model<ProductDocument>(
-  'Product',
+  "Product",
   productSchema
 );
 
