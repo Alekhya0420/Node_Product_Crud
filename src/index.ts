@@ -7,6 +7,7 @@ import productRoutes from './routes/product.routes';
 import authRoutes from './routes/auth.routes'
 import categoryRoutes from './routes/category.routes'
 import supplierRoutes from './routes/supplier.routes'
+import inventoryRoutes from './routes/inventory.routes'
 
 const app = express();
 const PORT = 3000;
@@ -26,6 +27,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/auth',authRoutes);
 app.use('/api/categories',categoryRoutes);
 app.use('/api/supplier',supplierRoutes);
+app.use('/api/inventory',inventoryRoutes);
 
 const startServer = async () => {
   try {
