@@ -29,6 +29,7 @@ app.use('/api/categories',categoryRoutes);
 app.use('/api/supplier',supplierRoutes);
 app.use('/api/inventory',inventoryRoutes);
 
+
 const startServer = async () => {
   try {
     await mongoose.connect(MONGO_URI);

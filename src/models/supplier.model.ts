@@ -13,6 +13,7 @@ const supplierSchema = new Schema<supplierDocument>(
       required: true,
       trim: true,
       unique:true,
+      lowercase:true
     },
     status: {
       type: String,
