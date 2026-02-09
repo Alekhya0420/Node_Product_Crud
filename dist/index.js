@@ -13,7 +13,6 @@ const category_routes_1 = __importDefault(require("./routes/category.routes"));
 const supplier_routes_1 = __importDefault(require("./routes/supplier.routes"));
 const app = (0, express_1.default)();
 const PORT = 3000;
-//const MONGO_URI = 'mongodb+srv://Alekhya:VesEL_ND77thuQV@cluster0.xel9zn0.mongodb.net/productDB?retryWrites=true&w=majority'
 dotenv_1.default.config();
 const MONGO_URI = process.env.MONGO_URI;
 app.use(express_1.default.json());
