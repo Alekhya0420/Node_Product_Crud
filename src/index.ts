@@ -28,6 +28,10 @@ app.get('/', (_req: Request, res: Response) => {
 });
 
 app.use('/api/products', productRoutes);
+app.use('/api/auth',authRoutes);
+app.use('/api/categories',categoryRoutes);
+app.use('/api/supplier',supplierRoutes);
+app.use('/api/inventory',inventoryRoutes);
 
 const startServer = async () => {
   try {
