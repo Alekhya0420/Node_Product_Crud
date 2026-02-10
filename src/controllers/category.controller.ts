@@ -39,6 +39,7 @@ export const getCategories = async (req: Request, res: Response) => {
       .sort({ createdAt: -1 });
 
     res.status(200).json(categories);
+    console.info('categories are',categories);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch categories" });
   }

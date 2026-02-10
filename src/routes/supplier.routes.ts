@@ -1,13 +1,23 @@
 import { Router } from "express";
 import { authMiddleware } from "../middlewares/auth.middleware";
-import { createSupplier,getAllSupplier,getSupplierUpdate } from "../controllers/supplier.controller";
+import {
+  createSupplier,
+  deleteSupplier,
+  getAllSupplier,
+  getOneSupplier,
+  getUpdateSupplier,bulkDeleteSupplier
+} from "../controllers/supplier.controller";
 
 const router = Router();
-router.use(authMiddleware)
+router.use(authMiddleware);
 
 //api endpoints
-router.post("/create-supplier",createSupplier);
-router.get('/',getAllSupplier);
-router.patch('/:id',getSupplierUpdate);
+router.post("/create-supplier", createSupplier);
+router.get("/", getAllSupplier);
+router.get("/:id", getOneSupplier);
+router.patch("/:id",getUpdateSupplier);
+router.delete("/bulk", bulkDeleteSupplier);
+router.delete("/:id",deleteSupplier)
+
 
 export default router;
