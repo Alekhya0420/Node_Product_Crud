@@ -68,7 +68,6 @@ export const getProducts = async (req: Request, res: Response) => {
   }
 };
 
-
 export const getProductById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -139,7 +138,6 @@ export const createProduct = async (req: Request, res: Response) => {
 };
 
 
-
 export const updateProduct = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -185,7 +183,6 @@ export const updateProduct = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to update product" });
   }
 };
-
 
 
 export const deleteProduct = async (req: Request, res: Response) => {
