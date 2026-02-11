@@ -4,32 +4,52 @@ import { CategoryModel } from "../models/category.model";
 /**CREATE CATEGORY,One category can have many products,A product cannot belong to another category*/
 export const createCategory = async (req: Request, res: Response) => {
   try {
-    const { name } = req.body;
+    const { name, products } = req.body;
 
-    if (!name) {
+    if (!name || !Array.isArray(products) || products.length === 0) {
       return res.status(400).json({
-        message: "Category name is  required",
+        message: "Name and products are required",
       });
     }
 
-    //if category name already exist,you can't again create the same category
-    const cateGoryPresent = await CategoryModel.findOne({ name });
-    if (cateGoryPresent) {
+    const categoryPresent = await CategoryModel.findOne({ name });
+
+    if (categoryPresent) {
       return res.status(409).json({
         message:
-          "Category already exist,You cant create category with same name",
+          "Category already exists, you can't create category with same name",
       });
     }
-
-    const category = await CategoryModel.create({
-      name,
+   //Check if any product already exists in another category
+    const productConflict = await CategoryModel.findOne({
+      products: { $in: products },
     });
 
-    res.status(201).json(category);
+    if (productConflict) {
+      return res.status(409).json({
+        message:
+          "One or more products are already assigned to another category",
+      });
+    }
+    //Create category
+    const category = await CategoryModel.create({
+      name,
+      products,
+    });
+
+    return res.status(201).json({
+      message: "Category created successfully",
+      data: category,
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Failed to create category" });
+    console.error("Error is", error);
+    return res.status(500).json({
+      message: "Failed to create category",
+    });
   }
 };
+
 
 /** GET ALL CATEGORIES (Admin View) */
 export const getCategories = async (req: Request, res: Response) => {

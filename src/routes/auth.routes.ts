@@ -7,6 +7,7 @@ import {
   forgotPasswordOTP,
   resetPassword,
   verifyOtp,
+  showProfile
 } from "../controllers/auth.controller";
 
 const router = Router();
@@ -18,5 +19,6 @@ router.post("/logout", logout);
 router.post("/forgot-password", forgotPasswordOTP);
 router.post("/verify-otp", verifyOtp);
 router.post("/reset-password", resetPassword);
+router.get("/profile",showProfile);
 
 export default router;

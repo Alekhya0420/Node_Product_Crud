@@ -153,7 +153,7 @@ export const forgotPasswordOTP = async (req: Request, res: Response) => {
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
     user.otp = otp;
-    user.otpExpiry = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes
+    user.otpExpiry = new Date(Date.now() + 2 * 60 * 1000);
     await user.save();
 
     await sendMail({
@@ -208,7 +208,6 @@ export const verifyOtp = async (req: Request, res: Response) => {
   }
 };
 
-
 /** Reset Password */
 export const resetPassword = async (req: Request, res: Response) => {
   try {
@@ -249,5 +248,46 @@ export const resetPassword = async (req: Request, res: Response) => {
     return res.status(500).json({
       message: "Reset password failed",
     });
+  }
+};
+//Profile Api
+export const showProfile = async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    //Check if token exists
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Access token required" });
+    }
+    const token = authHeader.split(" ")[1];
+
+    //Verify token
+    const decoded = jwt.verify(
+      token,
+      process.env.ACCESS_TOKEN_SECRET!
+    ) as { id: string };
+
+    console.info('decoded is',decoded);
+    //Find user(excluding all of the fields which i have shown)
+    const user = await UserModel.findById(decoded.id).select(
+      "-password -refreshToken -otp -otpExpiry"
+    );
+    console.info('user is',user);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    //Return profile data
+    return res.status(200).json({
+      message: "Profile fetched successfully",
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
