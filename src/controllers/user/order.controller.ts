@@ -1,43 +1,96 @@
 import { Response } from "express";
 import { CartModel } from "../../models/user/cart.module";
 import { OrderModel } from "../../models/user/order.model";
+import { InventoryModel } from "../../models/inventory.model";
+import { ProductDocument } from "../../models/product.model";
 import { AuthRequest } from "../../middlewares/auth.middleware";
 
-// Place order
 export const placeOrder = async (req: AuthRequest, res: Response) => {
   try {
+    // Get cart with populated product
     const cart = await CartModel.findOne({ userId: req.user!.id })
-      .populate("items.productId");
+      .populate<{
+        items: { productId: ProductDocument; quantity: number }[];
+      }>("items.productId");
 
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
     }
 
-    let total = 0;
+    let totalAmount = 0;
+    const orderItems: {
+      productId: any;
+      quantity: number;
+      price: number;
+    }[] = [];
 
-    const orderItems = cart.items.map((item: any) => {
-      total += item.productId.price * item.quantity;
+    // Loop through cart items
+    for (const item of cart.items) {
+      const product = item.productId;
 
-      return {
-        productId: item.productId._id,
+      if (!product) {
+        return res.status(400).json({
+          message: "Product not found",
+        });
+      }
+
+      // Check inventory
+      const inventory = await InventoryModel.findOne({
+        productId: product._id,
+      });
+
+      if (!inventory || inventory.quantity < item.quantity) {
+        return res.status(400).json({
+          message: `Insufficient stock for ${product.name}`,
+        });
+      }
+
+      //  Decrease inventory
+      inventory.quantity -= item.quantity;
+
+      // Update stock status
+      if (inventory.quantity <= inventory.minThreshold) {
+        inventory.status = "out_of_stock";
+      } else {
+        inventory.status = "in_stock";
+      }
+
+      await inventory.save();
+
+      //  Calculate total
+      totalAmount += product.price * item.quantity;
+
+      orderItems.push({
+        productId: product._id,
         quantity: item.quantity,
-        price: item.productId.price,
-      };
-    });
+        price: product.price,
+      });
+    }
 
+    // Create order
     const order = await OrderModel.create({
       userId: req.user!.id,
       items: orderItems,
-      totalAmount: total,
+      totalAmount,
     });
 
+    // Clear cart
     await CartModel.deleteOne({ userId: req.user!.id });
 
-    res.status(201).json(order);
-  } catch {
-    res.status(500).json({ message: "Failed to place order" });
+    return res.status(201).json({
+      message: "Order placed successfully",
+      data: order,
+    });
+
+  } catch (error) {
+    console.error("Order error:", error);
+    return res.status(500).json({
+      message: "Failed to place order",
+    });
   }
 };
+
+
 
 // Get my orders
 export const getMyOrders = async (req: AuthRequest, res: Response) => {
