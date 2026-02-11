@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.routes'
 import categoryRoutes from './routes/category.routes'
 import supplierRoutes from './routes/supplier.routes'
 import inventoryRoutes from './routes/inventory.routes'
+import dashboardRoutes from './routes/dashboard.routes'
 
 const app = express();
 const PORT = 3000;
@@ -32,6 +33,8 @@ app.use('/api/auth',authRoutes);
 app.use('/api/categories',categoryRoutes);
 app.use('/api/supplier',supplierRoutes);
 app.use('/api/inventory',inventoryRoutes);
+app.use('/api/dashboard',dashboardRoutes);
+
 
 const startServer = async () => {
   try {

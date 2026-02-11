@@ -3,10 +3,7 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { UserModel } from "../models/user.model";
 import { hashPassword, comparePassword } from "../utils/hash";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-} from "../utils/jwt";
+import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 import { sendMail } from "../utils/mail";
 
 /** REGISTER */
@@ -24,12 +21,13 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const hashedPassword = await hashPassword(password);
-    console.info('hashed password is',hashPassword);
+    console.info("hashed password is", hashPassword);
 
     await UserModel.create({
       name,
       email,
       password: hashedPassword,
+
     });
 
     return res.status(201).json({
@@ -59,18 +57,21 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const accessToken = generateAccessToken({ id: user._id });
-    const refreshToken = generateRefreshToken({ id: user._id });
+    const accessToken = generateAccessToken({ id: user._id, role: user.role });
+    const refreshToken = generateRefreshToken({
+      id: user._id,
+      role: user.role,
+    });
 
     user.refreshToken = refreshToken;
     await user.save();
 
     return res.status(200).json({
-    statusCode: 200,
-    message: "User logged in successfully",
-      data:{
-        email:user.email,
-        name:user.name,
+      statusCode: 200,
+      message: "User logged in successfully",
+      data: {
+        email: user.email,
+        name: user.name,
         accessToken,
         refreshToken,
       },
@@ -94,11 +95,7 @@ export const refreshToken = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "Invalid refresh token" });
     }
 
-    jwt.verify(
-      refreshToken,
-      process.env.REFRESH_TOKEN_SECRET!,
-      () => {}
-    );
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!, () => {});
 
     const newAccessToken = generateAccessToken({ id: user._id });
 
@@ -121,7 +118,7 @@ export const logout = async (req: Request, res: Response) => {
 
     await UserModel.updateOne(
       { refreshToken },
-      { $unset: { refreshToken: 1 } }
+      { $unset: { refreshToken: 1 } },
     );
 
     return res.status(200).json({
@@ -136,18 +133,18 @@ export const logout = async (req: Request, res: Response) => {
 export const forgotPasswordOTP = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
-    console.info('case is',email);
+    console.info("case is", email);
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    const user = await UserModel.findOne({email});
+    const user = await UserModel.findOne({ email });
     const usermail = user?.email;
 
-    if(!user){
+    if (!user) {
       return res.status(404).json({
-        message:'Email does not exist'
-      })
+        message: "Email does not exist",
+      });
     }
 
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
@@ -167,11 +164,10 @@ export const forgotPasswordOTP = async (req: Request, res: Response) => {
       `,
     });
 
-    if(usermail === email)
-    {
+    if (usermail === email) {
       return res.status(200).json({
-        message:"Otp has sent to your email",
-      })
+        message: "Otp has sent to your email",
+      });
     }
   } catch (error) {
     console.error("❌ OTP ERROR:", error);
@@ -242,7 +238,6 @@ export const resetPassword = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: "Password reset successful",
     });
-
   } catch (error) {
     console.error("❌ RESET PASSWORD ERROR:", error);
     return res.status(500).json({
@@ -262,17 +257,16 @@ export const showProfile = async (req: Request, res: Response) => {
     const token = authHeader.split(" ")[1];
 
     //Verify token
-    const decoded = jwt.verify(
-      token,
-      process.env.ACCESS_TOKEN_SECRET!
-    ) as { id: string };
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as {
+      id: string;
+    };
 
-    console.info('decoded is',decoded);
+    console.info("decoded is", decoded);
     //Find user(excluding all of the fields which i have shown)
     const user = await UserModel.findById(decoded.id).select(
-      "-password -refreshToken -otp -otpExpiry"
+      "-password -refreshToken -otp -otpExpiry",
     );
-    console.info('user is',user);
+    console.info("user is", user);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
