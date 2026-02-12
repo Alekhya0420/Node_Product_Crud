@@ -23,9 +23,6 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 
-app.use('/uploads', express.static('uploads'));
-
-
 app.get('/', (_req: Request, res: Response) => {
   res.send('Product CRUD API is running');
   res.send('Product CRUD API is running');

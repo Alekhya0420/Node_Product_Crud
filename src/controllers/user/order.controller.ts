@@ -68,7 +68,7 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
       totalAmount,
     });
 
-    // Clear cart
+    //Order has placed so oviously cart will be removed
     await CartModel.deleteOne({ userId: req.user!.id });
 
     return res.status(201).json({

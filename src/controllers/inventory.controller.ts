@@ -107,7 +107,7 @@ export const updateInventory = async (req: Request, res: Response) => {
         message: "minThreshold cannot be negative",
       });
     }
-
+      
     const inventory = await InventoryModel.findById(id);
     if (!inventory) {
       return res.status(404).json({ message: "Inventory not found" });
