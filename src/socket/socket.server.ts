@@ -27,7 +27,7 @@ export const createSocketServer = (app: Express) => {
         process.env.JWT_SECRET as string
       );
 
-      socket.data.user = decoded; // attach user info
+      socket.data.user = decoded; 
       next();
 
     } catch (error) {
@@ -36,7 +36,6 @@ export const createSocketServer = (app: Express) => {
   });
 
   /*-------------------------Register Chat Events--------------------------*/
-
   registerChatHandlers(io);
 
   return server;
