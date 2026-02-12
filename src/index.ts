@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config({ path: ".env" });
-
+import { createSocketServer } from "./socket/socket.server";
 import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import productRoutes from './routes/product.routes';
@@ -9,6 +9,9 @@ import categoryRoutes from './routes/category.routes'
 import supplierRoutes from './routes/supplier.routes'
 import inventoryRoutes from './routes/inventory.routes'
 import dashboardRoutes from './routes/dashboard.routes'
+import OrderRoutes from './routes/user/order.routes'
+import CartRoutes from './routes/user/cart.routes'
+import { connectDB } from "./config/db";
 
 const app = express();
 const PORT = 3000;
@@ -34,24 +37,27 @@ app.use('/api/categories',categoryRoutes);
 app.use('/api/supplier',supplierRoutes);
 app.use('/api/inventory',inventoryRoutes);
 app.use('/api/dashboard',dashboardRoutes);
+app.use('/api/order',OrderRoutes)
+app.use('/api/cart',CartRoutes);
 
 
 const startServer = async () => {
   try {
-    await mongoose.connect(MONGO_URI);
-    console.log('MongoDB connected');
-    console.log('MongoDB connected');
+    await connectDB();
 
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-      console.log(`Server running on http://localhost:${PORT}`);
+    const server = createSocketServer(app);
+
+    server.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
+
   } catch (error) {
-    console.error('MongoDB connection failed:', error);
-    console.error('MongoDB connection failed:', error);
+    console.error("Server failed to start:", error);
     process.exit(1);
   }
 };
 
 startServer();
+
+
 

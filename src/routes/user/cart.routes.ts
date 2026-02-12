@@ -5,8 +5,8 @@ import { addToCart,getMyCart,removeFromCart } from "../../controllers/user/cart.
 
 const router = Router();
 
-router.post("/", authMiddleware, authorize("user"), addToCart);
-router.get("/", authMiddleware, authorize("user"), getMyCart);
-router.delete("/", authMiddleware, authorize("user"), removeFromCart);
+router.post("/add-to-cart", authMiddleware, authorize("user"), addToCart);
+router.get("/get-cart", authMiddleware, authorize("user"), getMyCart);
+router.delete("/remove-cart", authMiddleware, authorize("user"), removeFromCart);
 
 export default router;

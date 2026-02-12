@@ -8,7 +8,7 @@ import {
 
 const router = Router();
 
-router.post("/", authMiddleware, authorize("user"), placeOrder);
-router.get("/", authMiddleware, authorize("user"), getMyOrders);
+router.post("/place-order", authMiddleware, authorize("user"), placeOrder);
+router.get("/get-my-order", authMiddleware, authorize("user"), getMyOrders);
 
 export default router;

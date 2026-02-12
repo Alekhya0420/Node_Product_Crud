@@ -69,7 +69,7 @@ router.post(
   createInventory,
 );
 
-router.put("/:id", authMiddleware, authorize("admin"), updateInventory);
+router.patch("/:id", authMiddleware, authorize("admin"), updateInventory);
 
 router.delete("/:id", authMiddleware, authorize("admin"), deleteInventory);
 

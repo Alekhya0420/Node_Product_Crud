@@ -4,7 +4,7 @@ export interface InventoryDocument extends Document {
   productId: Types.ObjectId;
   quantity: number;
   minThreshold: number;
-  status: "in_stock" | "out_of_stock";
+  status: "in_stock" | "out_of_stock"| "low_stock";
 }
 
 const inventorySchema = new Schema<InventoryDocument>(
@@ -30,7 +30,7 @@ const inventorySchema = new Schema<InventoryDocument>(
 
     status: {
       type: String,
-      enum: ["in_stock", "out_of_stock"],
+      enum: ["in_stock", "out_of_stock","low_stock"],
       default: "in_stock",
     },
   },

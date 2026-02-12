@@ -4,14 +4,14 @@ import { OrderModel } from "../../models/user/order.model";
 import { InventoryModel } from "../../models/inventory.model";
 import { ProductDocument } from "../../models/product.model";
 import { AuthRequest } from "../../middlewares/auth.middleware";
+import { calculateStatus } from "../../helper/calculate.inventory";
 
 export const placeOrder = async (req: AuthRequest, res: Response) => {
   try {
     // Get cart with populated product
-    const cart = await CartModel.findOne({ userId: req.user!.id })
-      .populate<{
-        items: { productId: ProductDocument; quantity: number }[];
-      }>("items.productId");
+    const cart = await CartModel.findOne({ userId: req.user!.id }).populate<{
+      items: { productId: ProductDocument; quantity: number }[];
+    }>("items.productId");
 
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
@@ -44,20 +44,14 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
           message: `Insufficient stock for ${product.name}`,
         });
       }
-
-      //  Decrease inventory
       inventory.quantity -= item.quantity;
 
       // Update stock status
-      if (inventory.quantity <= inventory.minThreshold) {
-        inventory.status = "out_of_stock";
-      } else {
-        inventory.status = "in_stock";
-      }
-
+      inventory.status = calculateStatus(
+        inventory.quantity,
+        inventory.minThreshold,
+      );
       await inventory.save();
-
-      //  Calculate total
       totalAmount += product.price * item.quantity;
 
       orderItems.push({
@@ -81,7 +75,6 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
       message: "Order placed successfully",
       data: order,
     });
-
   } catch (error) {
     console.error("Order error:", error);
     return res.status(500).json({
@@ -90,13 +83,13 @@ export const placeOrder = async (req: AuthRequest, res: Response) => {
   }
 };
 
-
-
 // Get my orders
 export const getMyOrders = async (req: AuthRequest, res: Response) => {
   try {
-    const orders = await OrderModel.find({ userId: req.user!.id })
-      .populate("items.productId", "name price");
+    const orders = await OrderModel.find({ userId: req.user!.id }).populate(
+      "items.productId",
+      "name price",
+    );
 
     res.status(200).json(orders);
   } catch {

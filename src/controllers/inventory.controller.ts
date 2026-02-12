@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { InventoryModel } from "../models/inventory.model";
 import { ProductModel } from "../models/product.model";
+import { calculateStatus } from "../helper/calculate.inventory";
 
 // Create Inventory
 export const createInventory = async (req: Request, res: Response) => {
@@ -113,7 +114,13 @@ export const updateInventory = async (req: Request, res: Response) => {
     }
 
     if (quantity !== undefined) inventory.quantity = quantity;
-    if (minThreshold !== undefined) inventory.minThreshold = minThreshold;
+    if (minThreshold !== undefined)
+      inventory.minThreshold = minThreshold;
+
+    inventory.status = calculateStatus(
+      inventory.quantity,
+      inventory.minThreshold
+    );
 
     await inventory.save();
 
@@ -122,6 +129,7 @@ export const updateInventory = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to update inventory" });
   }
 };
+
 
 // Delete Inventory
 export const deleteInventory = async (req: Request, res: Response) => {
