@@ -5,6 +5,7 @@ import { UserModel } from "../models/user.model";
 import { hashPassword, comparePassword } from "../utils/hash";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
 import { sendMail } from "../utils/mail";
+import { ConversationModel } from "../models/socket/conversation.model";
 
 /** REGISTER */
 export const register = async (req: Request, res: Response) => {
@@ -23,11 +24,20 @@ export const register = async (req: Request, res: Response) => {
     const hashedPassword = await hashPassword(password);
     console.info("hashed password is", hashPassword);
 
-    await UserModel.create({
+    // await UserModel.create({
+    //   name,
+    //   email,
+    //   password: hashedPassword,
+    // });
+
+    const newUser = await UserModel.create({
       name,
       email,
       password: hashedPassword,
+    });
 
+    await ConversationModel.create({
+      userId: newUser._id,
     });
 
     return res.status(201).json({
