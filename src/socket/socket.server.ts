@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 import { registerChatHandlers } from "./chat.socket";
 
 export const createSocketServer = (app: Express) => {
-
   const server = http.createServer(app);
 
   const io = new Server(server, {
@@ -15,21 +14,20 @@ export const createSocketServer = (app: Express) => {
   });
   /* ------------------------- Socket Authentication-------------------------- */
   io.use((socket, next) => {
-    const token = socket.handshake.auth.token;
+    const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+
+    console.log("Incoming token:", token);
+    console.log("JWT Secret:", process.env.JWT_SECRET);
 
     if (!token) {
       return next(new Error("Authentication error"));
     }
 
     try {
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET as string
-      );
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET as string);
 
-      socket.data.user = decoded; 
+      socket.data.user = decoded;
       next();
-
     } catch (error) {
       next(new Error("Authentication error"));
     }

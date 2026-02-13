@@ -11,6 +11,7 @@ import inventoryRoutes from './routes/inventory.routes'
 import dashboardRoutes from './routes/dashboard.routes'
 import OrderRoutes from './routes/user/order.routes'
 import CartRoutes from './routes/user/cart.routes'
+import chatRoutes from './routes/socket/socket.routes'
 import { connectDB } from "./config/db";
 
 const app = express();
@@ -36,6 +37,7 @@ app.use('/api/inventory',inventoryRoutes);
 app.use('/api/dashboard',dashboardRoutes);
 app.use('/api/order',OrderRoutes)
 app.use('/api/cart',CartRoutes);
+app.use('/chat',chatRoutes);
 
 
 const startServer = async () => {
