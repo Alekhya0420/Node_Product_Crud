@@ -1,0 +1,16 @@
+import { z } from "zod";
+
+export const userSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email"),
+  age: z
+    .string()
+    .min(1, "Age is required")
+    .refine((val) => !isNaN(Number(val)), {
+      message: "Age must be a number",
+    }),
+  phone: z.string().min(10, "Phone must be at least 10 digits"),
+  image: z.any().optional(),
+});
+
+export type UserFormValues = z.infer<typeof userSchema>;

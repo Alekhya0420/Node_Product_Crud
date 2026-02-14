@@ -8,6 +8,7 @@ const supplierSchema = new mongoose_1.Schema({
         required: true,
         trim: true,
         unique: true,
+        lowercase: true
     },
     status: {
         type: String,

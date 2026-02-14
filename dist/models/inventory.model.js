@@ -21,7 +21,7 @@ const inventorySchema = new mongoose_1.Schema({
     },
     status: {
         type: String,
-        enum: ["in_stock", "out_of_stock"],
+        enum: ["in_stock", "out_of_stock", "low_stock"],
         default: "in_stock",
     },
 }, { timestamps: true });

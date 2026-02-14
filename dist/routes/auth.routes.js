@@ -10,5 +10,6 @@ router.post("/logout", auth_controller_1.logout);
 router.post("/forgot-password", auth_controller_1.forgotPasswordOTP);
 router.post("/verify-otp", auth_controller_1.verifyOtp);
 router.post("/reset-password", auth_controller_1.resetPassword);
+router.get("/profile", auth_controller_1.showProfile);
 exports.default = router;
 //# sourceMappingURL=auth.routes.js.map

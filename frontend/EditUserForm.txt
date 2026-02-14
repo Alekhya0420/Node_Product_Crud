@@ -1,0 +1,56 @@
+"use client";
+
+import { UserForm } from "./UserForm";
+import { UserFormValues } from "@/schemas/user.schema";
+import { editUser } from "@/hooks/editUser";
+
+interface EditUserFormProps {
+  userId: string;
+  defaultValues: {
+    name: string;
+    email: string;
+    age: string;
+    phone: string;
+  };
+  imageUrl?: string;
+}
+
+export const EditUserForm = ({
+  userId,
+  defaultValues,
+  imageUrl,
+}: EditUserFormProps) => {
+  const { mutate, isPending } = editUser(userId);
+
+  const handleEdit = (
+    values: UserFormValues,
+    removedImage: boolean
+  ) => {
+    const formData = new FormData();
+
+    formData.append("name", values.name);
+    formData.append("email", values.email);
+    formData.append("age", values.age);
+    formData.append("phone", values.phone);
+
+    if (values.image instanceof File) {
+      formData.append("image", values.image);
+    }
+
+    if (removedImage) {
+      formData.append("removeImage", "true");
+    }
+
+    mutate(formData);
+  };
+
+  return (
+    <UserForm
+      defaultValues={defaultValues}
+      existingImage={imageUrl}
+      onSubmit={handleEdit}
+      isLoading={isPending}
+      buttonText="Update User"
+    />
+  );
+};
