@@ -1,0 +1,172 @@
+"use client";
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { X } from "lucide-react";
+
+import { userSchema, UserFormValues } from "@/schemas/user.schema";
+
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+interface UserFormProps {
+  defaultValues?: Partial<UserFormValues>;
+  existingImage?: string;
+  onSubmit: (data: UserFormValues, removedImage: boolean) => void;
+  isLoading?: boolean;
+  buttonText: string;
+}
+
+export const UserForm = ({
+  defaultValues,
+  existingImage,
+  onSubmit,
+  isLoading,
+  buttonText,
+}: UserFormProps) => {
+  const form = useForm<UserFormValues>({
+    resolver: zodResolver(userSchema),
+    defaultValues,
+  });
+
+  const [preview, setPreview] = useState<string | null>(
+    existingImage || null
+  );
+  const [removedImage, setRemovedImage] = useState(false);
+
+  const handleRemoveImage = () => {
+    setPreview(null);
+    setRemovedImage(true);
+    form.setValue("image", undefined);
+  };
+
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit((values) =>
+          onSubmit(values, removedImage)
+        )}
+        className="space-y-6"
+      >
+        {/* Name */}
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Email */}
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Age */}
+        <FormField
+          control={form.control}
+          name="age"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Age</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Phone */}
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Image */}
+        <FormField
+          control={form.control}
+          name="image"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Image</FormLabel>
+              <FormControl>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    field.onChange(file);
+
+                    if (file) {
+                      setPreview(URL.createObjectURL(file));
+                      setRemovedImage(false);
+                    }
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Preview */}
+        {preview && (
+          <div className="relative w-32">
+            <img
+              src={preview}
+              className="h-32 w-32 rounded-md object-cover border"
+              alt="preview"
+            />
+            <button
+              type="button"
+              onClick={handleRemoveImage}
+              className="absolute -top-2 -right-2 bg-black text-white rounded-full p-1"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Please wait..." : buttonText}
+        </Button>
+      </form>
+    </Form>
+  );
+};

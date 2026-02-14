@@ -5,36 +5,77 @@ const category_model_1 = require("../models/category.model");
 /**CREATE CATEGORY,One category can have many products,A product cannot belong to another category*/
 const createCategory = async (req, res) => {
     try {
-        const { name } = req.body;
-        if (!name) {
+        const { name, products } = req.body;
+        if (!name || !Array.isArray(products) || products.length === 0) {
             return res.status(400).json({
-                message: "Category name is  required",
+                message: "Name and products are required",
             });
         }
-        //if category name already exist,you can't again create the same category
-        const cateGoryPresent = await category_model_1.CategoryModel.findOne({ name });
-        if (cateGoryPresent) {
+        const categoryPresent = await category_model_1.CategoryModel.findOne({ name });
+        if (categoryPresent) {
             return res.status(409).json({
-                message: "Category already exist,You cant create category with same name",
+                message: "Category already exists, you can't create category with same name",
             });
         }
+        //Check if any product already exists in another category
+        const productConflict = await category_model_1.CategoryModel.findOne({
+            products: { $in: products },
+        });
+        if (productConflict) {
+            return res.status(409).json({
+                message: "One or more products are already assigned to another category",
+            });
+        }
+        //Create category
         const category = await category_model_1.CategoryModel.create({
             name,
+            products,
         });
-        res.status(201).json(category);
+        return res.status(201).json({
+            message: "Category created successfully",
+            data: category,
+        });
     }
     catch (error) {
-        res.status(500).json({ message: "Failed to create category" });
+        console.error("Error is", error);
+        return res.status(500).json({
+            message: "Failed to create category",
+        });
     }
 };
 exports.createCategory = createCategory;
 /** GET ALL CATEGORIES (Admin View) */
 const getCategories = async (req, res) => {
     try {
-        const categories = await category_model_1.CategoryModel.find()
+        // pagination
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 100);
+        const skip = (page - 1) * limit;
+        // filters
+        const search = req.query.search;
+        const status = req.query.status;
+        const filter = {};
+        if (search) {
+            filter.name = { $regex: search, $options: "i" };
+        }
+        if (status && ["active", "inactive"].includes(status)) {
+            filter.status = status;
+        }
+        const categories = await category_model_1.CategoryModel.find(filter)
             .populate("products", "name price status")
-            .sort({ createdAt: -1 });
-        res.status(200).json(categories);
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+        const total = await category_model_1.CategoryModel.countDocuments(filter);
+        res.status(200).json({
+            totalData: {
+                totalDocs: total,
+                currentPage: page,
+                totalPages: Math.ceil(total / limit),
+                limit,
+            },
+            data: categories,
+        });
     }
     catch (error) {
         res.status(500).json({ message: "Failed to fetch categories" });

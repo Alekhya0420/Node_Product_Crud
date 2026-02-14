@@ -14,6 +14,12 @@ const CategorySchema = new mongoose_1.Schema({
         enum: ["active", "inactive"],
         default: "active",
     },
+    products: [
+        {
+            type: mongoose_1.Schema.Types.ObjectId,
+            ref: "Product",
+        },
+    ],
 }, {
     timestamps: true,
 });

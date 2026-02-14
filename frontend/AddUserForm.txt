@@ -1,0 +1,35 @@
+"use client";
+
+import { UserForm } from "./UserForm";
+import { UserFormValues } from "@/schemas/user.schema";
+import { addUser } from "@/hooks/addUser";
+
+export const AddUserForm = () => {
+  const { mutate, isPending } = addUser();
+
+  const handleAdd = (
+    values: UserFormValues,
+    removedImage: boolean
+  ) => {
+    const formData = new FormData();
+
+    formData.append("name", values.name);
+    formData.append("email", values.email);
+    formData.append("age", values.age);
+    formData.append("phone", values.phone);
+
+    if (values.image instanceof File) {
+      formData.append("image", values.image);
+    }
+
+    mutate(formData);
+  };
+
+  return (
+    <UserForm
+      onSubmit={handleAdd}
+      isLoading={isPending}
+      buttonText="Add User"
+    />
+  );
+};

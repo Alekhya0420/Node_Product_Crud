@@ -106,7 +106,7 @@ const createProduct = async (req, res) => {
         };
         if (req.file) {
             productData.file = {
-                url: req.file.path,
+                url: req.file.location,
                 originalName: req.file.originalname,
                 mimeType: req.file.mimetype,
             };
@@ -141,7 +141,7 @@ const updateProduct = async (req, res) => {
                 });
             }
             updateData.file = {
-                url: req.file.path,
+                url: req.file.location,
                 originalName: req.file.originalname,
                 mimeType: req.file.mimetype,
             };

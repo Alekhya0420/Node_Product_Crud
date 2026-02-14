@@ -1,4 +1,6 @@
 "use strict";
+// import { Request, Response, NextFunction } from "express";
+// import jwt from "jsonwebtoken";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -15,7 +17,7 @@ const authMiddleware = (req, res, next) => {
         }
         const token = authHeader.split(" ")[1];
         const decoded = jsonwebtoken_1.default.verify(token, process.env.ACCESS_TOKEN_SECRET);
-        req.user = decoded; // attach user info (id, role, etc)
+        req.user = decoded;
         next();
     }
     catch (error) {

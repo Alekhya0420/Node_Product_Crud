@@ -7,6 +7,7 @@ exports.getLowStockInventory = exports.deleteInventory = exports.updateInventory
 const mongoose_1 = __importDefault(require("mongoose"));
 const inventory_model_1 = require("../models/inventory.model");
 const product_model_1 = require("../models/product.model");
+const calculate_inventory_1 = require("../helper/calculate.inventory");
 // Create Inventory
 const createInventory = async (req, res) => {
     try {
@@ -103,6 +104,7 @@ const updateInventory = async (req, res) => {
             inventory.quantity = quantity;
         if (minThreshold !== undefined)
             inventory.minThreshold = minThreshold;
+        inventory.status = (0, calculate_inventory_1.calculateStatus)(inventory.quantity, inventory.minThreshold);
         await inventory.save();
         res.status(200).json(inventory);
     }
