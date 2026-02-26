@@ -4,18 +4,25 @@ import { SupplierModel } from "../models/supplier.model";
 import { InventoryModel } from "../models/inventory.model";
 import { Request, Response } from "express";
 
-
 export const getDashboardSummary = async (req: Request, res: Response) => {
   try {
     // Products
     const totalProducts = await ProductModel.countDocuments();
-    const activeProducts = await ProductModel.countDocuments({ status: "active" });
-    const inactiveProducts = await ProductModel.countDocuments({ status: "inactive" });
+    const activeProducts = await ProductModel.countDocuments({
+      status: "active",
+    });
+    const inactiveProducts = await ProductModel.countDocuments({
+      status: "inactive",
+    });
 
     // Categories
     const totalCategories = await CategoryModel.countDocuments();
-    const activeCategories = await CategoryModel.countDocuments({ status: "active" });
-    const inactiveCategories = await CategoryModel.countDocuments({ status: "inactive" });
+    const activeCategories = await CategoryModel.countDocuments({
+      status: "active",
+    });
+    const inactiveCategories = await CategoryModel.countDocuments({
+      status: "inactive",
+    });
 
     // Suppliers
     const totalSuppliers = await SupplierModel.countDocuments();
@@ -26,7 +33,7 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
       $expr: { $lte: ["$quantity", "$minThreshold"] },
     });
     const inStock = await InventoryModel.countDocuments({
-      quantity: { $gt: 0 },
+      $expr: { $gt: ["$quantity", "$minThreshold"] },
     });
     const outOfStock = await InventoryModel.countDocuments({
       quantity: 0,
@@ -54,7 +61,6 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
         notLowStock: totalInventory - lowStock,
       },
     });
-
   } catch (error) {
     return res.status(500).json({
       message: "Failed to fetch dashboard summary",
